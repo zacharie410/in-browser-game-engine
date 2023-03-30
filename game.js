@@ -2,28 +2,12 @@ const CircularJSON=function(JSON,RegExp){var specialChar="~",safeSpecialChar="\\
 
 // Initialize the Babylon.js engine
 const canvas = document.getElementById("renderCanvas");
-const engine = new BABYLON.Engine(canvas, true);
-
+let engine = undefined;
 // Create a new scene
-const scene = new BABYLON.Scene(engine);
-
-// Add a camera to the scene
-const camera = new BABYLON.FreeCamera(
-  "camera",
-  new BABYLON.Vector3(0, 5, -10),
-  scene
-);
-camera.attachControl(canvas, true);
-
-// Add a light to the scene
-const light = new BABYLON.HemisphericLight(
-  "light",
-  new BABYLON.Vector3(0, 1, 0),
-  scene
-);
-
+let scene = undefined;
 // Define an array to hold all the constructed objects
 let objects = [];
+
 
 let selectedObject = null;
 
@@ -82,7 +66,6 @@ function generateObjectExplorer() {
   }
 }
 
-// Define a function to create a new object
 function createObject(type, position, rotation, scaling, material) {
   let newObj;
 
@@ -112,9 +95,9 @@ function createObject(type, position, rotation, scaling, material) {
   }
 
   // Set the object's properties based on the provided parameters
-  newObj.position = position || new BABYLON.Vector3(0, 0, 0);
-  newObj.rotation = rotation || new BABYLON.Vector3(0, 0, 0);
-  newObj.scaling = scaling || new BABYLON.Vector3(1, 1, 1);
+  newObj.position = position ?? new BABYLON.Vector3(0, 0, 0);
+  newObj.rotation = rotation ? new BABYLON.Vector3(rotation[0], rotation[1], rotation[2]) : new BABYLON.Vector3(0, 0, 0);
+  newObj.scaling = scaling ? new BABYLON.Vector3(scaling[0], scaling[1], scaling[2]) : new BABYLON.Vector3(1, 1, 1);
   newObj.material = material || new BABYLON.StandardMaterial("material", scene);
   newObj.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
   newObj.type = type;
@@ -122,57 +105,145 @@ function createObject(type, position, rotation, scaling, material) {
   // Add the object to the objects array
   objects.push(newObj);
   generateObjectExplorer();
-  saveToFile();
   // Return the new object
   return newObj;
 }
 
+
+
 function saveToFile() {
-  // Serialize each object and add it to the array
-  let serializedObjects = [];
-  for (let i = 0; i < objects.length; i++) {
-    serializedObjects.push(
-      CircularJSON.stringify(objects[i], (key, value) => {
-        if (key == "_scene") {
-          return undefined;
-        } else {
-          return value;
-        }
-      })
-    );
-  }
+  try {
+    // Exclude the _scene property from each object
+    let filteredObjects = objects.map(function(obj) {
+      let newObj = Object.assign({}, obj);
+      delete newObj._scene;
+      return newObj;
+    });
 
-  // Join the serialized objects into a single string and save to localStorage
-  let serializedData = serializedObjects.join(";");
-  localStorage.setItem("objects", serializedData);
-}
+    // Convert the filtered objects array to a JSON string
+    //let serializedData = CircularJSON.stringify(filteredObjects);
+    // Serialize the object to JSON with custom serialization for position
+    let serializedData = CircularJSON.stringify(filteredObjects, function(key, value) {
+      if (key === "_position" && value instanceof BABYLON.Vector3) {
+        return [value.x, value.y, value.z];
+      }
+      return value;
+    });
+    // Save the serialized data to local storage
+    localStorage.setItem("objects", serializedData);
 
-function loadScene(jsonData) {
-  if (jsonData) {
-    try {
-        // Clear the existing scene
-        scene.meshes.forEach(function(mesh) {
-            mesh.dispose();
-        });
-        // Split the data into an array of serialized objects
-        let serializedObjects = jsonData.split(";");
-        objects = []
-        // Deserialize each object and add it to the scene
-        serializedObjects.forEach(function (serializedObject) {
-            let objData = CircularJSON.parse(serializedObject);
-            createObject(
-            objData.type,
-            objData.position,
-            objData.rotation,
-            objData.scaling,
-            objData.material
-            );
-        });
-    } catch (error) {
-      console.log("Error loading scene:", error);
-    }
+    console.log("Scene saved successfully");
+  } catch (error) {
+    console.error("Error saving scene:", error);
   }
 }
+
+function newScene() {
+  objects = []
+  generateObjectExplorer();
+  
+  // Clear the existing scene
+  if (scene) {
+    scene.dispose();
+  }
+
+
+  engine = new BABYLON.Engine(canvas, true);
+  scene = new BABYLON.Scene(engine);
+
+  // Add a camera to the scene
+  const camera = new BABYLON.FreeCamera(
+    "camera",
+    new BABYLON.Vector3(0, 5, -10),
+    scene
+  );
+  camera.attachControl(canvas, true);
+  
+  // Add a light to the scene
+  const light = new BABYLON.HemisphericLight(
+    "light",
+    new BABYLON.Vector3(0, 1, 0),
+    scene
+  );
+  
+  
+  // Listen for pointer down events on the scene
+scene.onPointerDown = function (evt, pickResult) {
+  // Check if an object was clicked
+  if (pickResult.hit) {
+    // Get the clicked object
+    let clickedObject = pickResult.pickedMesh;
+
+    // Set the currently selected object
+    selectedObject = clickedObject;
+
+    // Update the property editor with information about the selected object
+    generatePropertyEditor(clickedObject);
+  } else {
+    // If nothing was clicked, deselect the current object
+    selectedObject = null;
+
+    // Clear the property editor
+    generatePropertyEditor(null);
+  }
+};
+
+
+// Start the game loop
+engine.runRenderLoop(function () {
+scene.render();
+});
+
+// Resize the canvas when the window is resized
+window.addEventListener("resize", function () {
+engine.resize();
+});
+// Resize the canvas to a larger size
+canvas.width = 800;
+canvas.height = 600;
+
+// Resize the engine to fit the new canvas size
+engine.resize();
+
+
+
+}
+
+function loadScene() {
+  try {
+    // Retrieve the serialized data from local storage
+    let serializedData = localStorage.getItem("objects");
+
+    // Parse the serialized data into an array of objects
+    let loadedObjects = JSON.parse(serializedData, function(key, value) {
+      if (key === "_position" && value instanceof Array) {
+        console.log("Loadeing data postion")
+        return new BABYLON.Vector3(value[0], value[1], value[2]);
+      }
+      return value;
+    });
+ 
+
+    newScene()
+
+    // Create the objects in the scene
+    loadedObjects.forEach(function(objData) {
+      console.log(objData)
+      createObject(
+        objData.type,
+        objData._position,
+        objData.rotation,
+        objData.scaling,
+        objData.material
+      );
+    });
+
+    console.log("Scene loaded successfully");
+  } catch (error) {
+    console.error("Error loading scene:", error);
+  }
+}
+
 //move objects
 
 document.addEventListener("keydown", function(event) {
@@ -199,68 +270,7 @@ document.addEventListener("keydown", function(event) {
         break;
     }
   });
-
-  // copy and paste
-  document.addEventListener("keydown", function(event) {
-    switch(event.code) {
-      case "KeyC":
-        if (event.ctrlKey && selectedObject) {
-          // Create a deep copy of the selected object using JSON.parse and JSON.stringify
-          let copiedObject = CircularJSON.parse(CircularJSON.stringify(selectedObject));
-          // Set the new object's name and position
-         // copiedObject.name = "Copy of " + selectedObject.name;
-          //copiedObject.position.x += 2;
-          // Add the new object to the scene and to the objects array
-          //scene.addMesh(copiedObject);
-          //objects.push(copiedObject);
-          // Set the copied object as the selected object and update the object explorer and property editor
-          selectedObject = copiedObject;
-          generateObjectExplorer();
-          generatePropertyEditor();
-
-        }
-        break;
-      case "KeyV":
-        if (event.ctrlKey && selectedObject) {
-          // Create a deep copy of the selected object using JSON.parse and JSON.stringify
-          let copiedObject = CircularJSON.parse(CircularJSON.stringify(selectedObject));
-          // Set the new object's name and position
-          copiedObject.name = "Copy of " + selectedObject.name;
-          copiedObject.position.x -= 2;
-          // Add the new object to the scene and to the objects array
-          scene.addMesh(copiedObject);
-          objects.push(copiedObject);
-          // Set the copied object as the selected object and update the object explorer and property editor
-          selectedObject = copiedObject;
-          generateObjectExplorer();
-          generatePropertyEditor();
-
-        }
-        break;
-    }
-  });
   
-
-  // Listen for pointer down events on the scene
-scene.onPointerDown = function (evt, pickResult) {
-    // Check if an object was clicked
-    if (pickResult.hit) {
-      // Get the clicked object
-      let clickedObject = pickResult.pickedMesh;
-  
-      // Set the currently selected object
-      selectedObject = clickedObject;
-  
-      // Update the property editor with information about the selected object
-      generatePropertyEditor(clickedObject);
-    } else {
-      // If nothing was clicked, deselect the current object
-      selectedObject = null;
-  
-      // Clear the property editor
-      generatePropertyEditor(null);
-    }
-  };
 
   // add buttons
   const boxButton = document.getElementById('box-button');
@@ -279,24 +289,19 @@ scene.onPointerDown = function (evt, pickResult) {
     createObject('cylinder');
   });
   
+  const saveButton = document.getElementById('save-button');
+  const loadButton = document.getElementById('load-button');
+  const newButton = document.getElementById('new-button');
+
+  newButton.addEventListener('click', function() {
+    newScene();
+  });
+
+  saveButton.addEventListener('click', function() {
+    saveToFile()
+  });
   
-
-// Start the game loop
-engine.runRenderLoop(function () {
-  scene.render();
-});
-
-// Resize the canvas when the window is resized
-window.addEventListener("resize", function () {
-  engine.resize();
-});
-// Resize the canvas to a larger size
-canvas.width = 800;
-canvas.height = 600;
-
-// Resize the engine to fit the new canvas size
-engine.resize();
-
-const myObject = createObject("box")
-
-loadScene(localStorage.getItem("objects"));
+  loadButton.addEventListener('click', function() {
+    loadScene();
+  });
+  
