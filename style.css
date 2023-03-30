@@ -1,0 +1,111 @@
+* {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+  
+  .editors {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .object-explorer {
+    flex: 0 0 200px;
+    background-color: #fff;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+  }
+  
+  .object-explorer h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+  }
+  
+  .object-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .object-list li {
+    margin-bottom: 5px;
+    cursor: pointer;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+  }
+  
+  .object-list li:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .editors .property-editor {
+    flex: 0 0 200px;
+    background-color: #fff;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+  }
+  
+  .property-editor h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+  }
+  
+  .property-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .property-list li {
+    margin-bottom: 10px;
+  }
+  
+  .property-list label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+  .property-list input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  
+  .add {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .add button {
+    margin-right: 10px;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: #fff;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .add button:hover {
+    background-color: #2980b9;
+  }
+  
+  canvas {
+    width: 100%;
+    height: 100%;
+
+  }
+  

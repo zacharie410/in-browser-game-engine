@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Game Engine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="editors">
+        <div class="object-explorer">
+        <h2>Object Explorer</h2>
+        <ul id="object-list"></ul>
+      </div>
+
+      <div class="property-editor">
+        <h2>Property Editor</h2>
+        <ul id="property-list"></ul>
+      </div>
+    </div>
+
+    <div class = "add">
+        <button id="box-button">Add Box</button>
+        <button id="sphere-button">Add Sphere</button>
+        <button id="cylinder-button">Add Cylinder</button>
+
+    </div>
+      
+    <canvas id="renderCanvas"></canvas>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="game.js" type="module"></script>
+</body>
+</html>
