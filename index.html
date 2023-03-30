@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Game Engine</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div class="editors">
-        <div class="object-explorer">
+      <div class="object-explorer">
         <h2>Object Explorer</h2>
         <ul id="object-list"></ul>
       </div>
@@ -20,16 +20,25 @@
       </div>
     </div>
 
-    <div class = "add">
-        <button id="box-button">Add Box</button>
-        <button id="sphere-button">Add Sphere</button>
-        <button id="cylinder-button">Add Cylinder</button>
+    <div class="saving">
+      <button id="new-button" type="button">New</button>
 
-    </div>
+      <button id="save-button" type="button">Save</button>
+      <button id="load-button" type="button">Load</button>
       
-    <canvas id="renderCanvas"></canvas>
+    </div>
+
+    <div class="add">
+      <button id="box-button">Add Box</button>
+      <button id="sphere-button">Add Sphere</button>
+      <button id="cylinder-button">Add Cylinder</button>
+    </div>
+    <div>
+      <canvas id="renderCanvas"></canvas>
+    </div>
+
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="game.js" type="module"></script>
-</body>
+  </body>
 </html>
